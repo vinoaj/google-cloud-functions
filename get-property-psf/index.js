@@ -13,7 +13,6 @@ const cheerio = require('cheerio');
 const RE_PSF = /.*\$(.*)\ psf/;
 const TARGET_CLASSNAME = 'attribute__3NZEO';
 const URL_BASE = 'https://www.99.co/singapore/s/sale/condos-apartments/';
-//bliss-ville';
 
 /**
  * Fetches the HTML content for a condo's sales listing page
@@ -26,9 +25,6 @@ function requestData(condoId) {
             .get(URL_BASE + condoId)
             .then(response => {
                 resolve(response.data);
-                //let psf = getPsf(response.data);
-                //console.log(psf);
-                //resolve({ 'psf': psf });
             })
             .catch(error => {
                 reject(error);
@@ -74,6 +70,7 @@ exports.lookupPsf = function lookupPsf(req, res) {
         res.status(200).send(json);
     })
     .catch(error => {
+        // Any outputs to console.log will be captured in Stackdriver
         console.log(error);
         res.status(400).send(error);
     });
@@ -86,7 +83,10 @@ exports.lookupPsf = function lookupPsf(req, res) {
 /*
 requestData('8-mount-sophia').then((htmlContent) => {
     let psf = getPsf(htmlContent);
-    console.log(psf);    
+    let json = { 
+        'psf': psf
+    }
+    console.log(json);    
 })
 .catch(error => {
     console.log(error);
