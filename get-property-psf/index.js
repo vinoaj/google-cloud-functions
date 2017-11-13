@@ -1,7 +1,7 @@
 /**
- * @fileoverview Google Cloud Function for looking at per square footage
+ * @fileoverview Google Cloud Function for looking at per square footage (PSF)
  *   pricing for a given condo / development and returning the lowest listed
- *   psf on the first page
+ *   PSF on the first page
  * @author vinoaj@vinoaj.com (Vinoaj Vijeyakumaar)
  */
 
@@ -9,38 +9,46 @@
 const axios = require('axios');
 const cheerio = require('cheerio');
 
+// Declare constants
 const RE_PSF = /.*\$(.*)\ psf/;
-const URL = 'https://www.99.co/singapore/s/sale/condos-apartments/'
+const TARGET_CLASSNAME = 'attribute__3NZEO';
+const URL_BASE = 'https://www.99.co/singapore/s/sale/condos-apartments/';
 //bliss-ville';
 
-
 /**
- * 
+ * Fetches the HTML content for a condo's sales listing page
+ * @param {string} condoId Condo ID on 99.co
+ * @returns {promise}
  */
-function main() {
+function requestData(condoId) {
     return new Promise((resolve,reject) => {
         axios
-            .get(url)
+            .get(URL_BASE + condoId)
             .then(response => {
-                //console.log('respose: ', response);
-                let psf = getPsf(response.data);
-                console.log(psf);
-                resolve({ 'psf': psf });
+                resolve(response.data);
+                //let psf = getPsf(response.data);
+                //console.log(psf);
+                //resolve({ 'psf': psf });
             })
             .catch(error => {
-                console.log(error);
                 reject(error);
             });
     });
 }
 
+/**
+ * Inspects the given HTML content for PSF values and returns the lowest
+ * value found.
+ * @param {string} htmlContent HTML that needs to be inspected
+ * @returns {number}
+ */
 function getPsf(htmlContent) {
+    // Use cheerio to use jQuery commands on the HTML content
     let $ = cheerio.load(htmlContent);
     let psfValues = [];
 
-    $('.attribute__3NZEO').each((i, elm) => {
+    $('.' + TARGET_CLASSNAME).each((i, elm) => {
         let elmContents = $(elm).text();
-        
         let matches = elmContents.match(RE_PSF);
         if (matches !== null) {
             let psfValue = matches[1];
@@ -49,13 +57,25 @@ function getPsf(htmlContent) {
         }
     });
 
-    return Math.min(...psfValues);
+    let lowestPsf = Math.min(...psfValues);
+    return lowestPsf;
 }
 
 
 exports.lookupPsf = function lookupPsf(req, res) {
-    main().then((psf) => {
-        res.status(200).send(psf);
+    // We expect the request to contain a JSON message with a key 'condoId'
+    let condoId = req.body.condoId;
+
+    requestData(condoId).then((htmlContent) => {
+        let psf = getPsf(htmlContent);
+        let json = { 
+            'psf': psf
+        }
+        res.status(200).send(json);
+    })
+    .catch(error => {
+        console.log(error);
+        res.status(400).send(error);
     });
 };
 
@@ -64,7 +84,12 @@ exports.lookupPsf = function lookupPsf(req, res) {
  * This function is called for testing from the console.
  */
 /*
-main().then((val) => {
-    console.log('end: ', val);
+requestData('8-mount-sophia').then((htmlContent) => {
+    let psf = getPsf(htmlContent);
+    console.log(psf);    
+})
+.catch(error => {
+    console.log(error);
+    res.status(400).send(error);
 });
 */
