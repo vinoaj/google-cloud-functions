@@ -57,7 +57,11 @@ function getPsf(htmlContent) {
     return lowestPsf;
 }
 
-
+/**
+ * Entry point for this Google Cloud Function
+ * @param {object} req Request
+ * @param {object} res Response
+ */
 exports.lookupPsf = function lookupPsf(req, res) {
     // We expect the request to contain a JSON message with a key 'condoId'
     let condoId = req.body.condoId;
