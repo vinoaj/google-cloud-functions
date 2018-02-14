@@ -1,0 +1,14 @@
+{
+  "name": "relay-measurement-protocol",
+  "version": "1.0.0",
+  "description": "Relay Google Analytics Measurement Protocol hits",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "vinoaj@vinoaj.com",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^0.17.1"
+  }
+}

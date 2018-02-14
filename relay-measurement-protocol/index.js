@@ -13,22 +13,40 @@ const MPVERSION = 1;
 const TPAGEVIEW = 'pageview';
 const TEVENT = 'event';
 
-function sendMeasurementProtocolHit(mpParams) {
-    axios.post(MPENDPOINT, {
+function sendMeasurementProtocolHit(type, mpParams) {
+    data = {
         v: MPVERSION,
         tid: mpParams.tid,
         cid: mpParams.cid,
         t: mpParams.t
-    })
+    };
+
+    if (type == TPAGEVIEW) {
+        data.dl = mpParams.dl;
+    }
+    
+    axios.post(MPENDPOINT, data);
 }
 
-function receiveRequest(req, res) {
+/**
+ * Entry point for this Google Cloud Function
+ * @param {object} req Request
+ * @param {object} res Response
+ */
+exports.relayRequest = function relayRequest(req, res) {
+    let mpParams = req.body;
+    
     try {
-        let tid = req.tid
+        let tid = mpParams.tid
     } catch (e) {
         throw "No tid provided";
     }
 
-    let cid = req.cid || 555;
-    let t = req.t || TPAGEVIEW;
-}
+    let cid = mpParams.cid || 555;
+    let t = mpParams.t || TPAGEVIEW;
+
+    mpParams.cid = cid;
+    mpParams.t = t;
+
+    sendMeasurementProtocolHit(mpParams);
+};
