@@ -5,27 +5,40 @@
  */
 
  // Load packages
-const axios = require('axios');
+ const axios = require('axios');
 
 // Constants
-const MPENDPOINT = 'https://www.google-analytics.com/collect';
-const MPVERSION = 1;
-const TPAGEVIEW = 'pageview';
-const TEVENT = 'event';
+const MP_ENDPOINT = 'https://www.google-analytics.com/collect';
+const MP_VERSION = 1;
+const HIT_TYPE_PAGEVIEW = 'pageview';
+const HIT_TYPE_EVENT = 'event';
 
+/**
+ * Posts a Measurement Protocol hit to GA's collection servers
+ * @param {string} type Hit type
+ * @param {object} mpParams Hit parameter values
+ * @returns {promise}
+ */
 function sendMeasurementProtocolHit(type, mpParams) {
     data = {
-        v: MPVERSION,
-        tid: mpParams.tid,
+        v: MP_VERSION,
         cid: mpParams.cid,
+        tid: mpParams.tid,
         t: mpParams.t
     };
 
-    if (type == TPAGEVIEW) {
+    if (type == HIT_TYPE_PAGEVIEW) {
         data.dl = mpParams.dl;
     }
     
-    axios.post(MPENDPOINT, data);
+    axios
+        .post(MP_ENDPOINT, data)
+        .then(response => {
+            resolve(response.status);
+        })
+        .catch(error => {
+            reject(error);
+        });
 }
 
 /**
@@ -43,10 +56,12 @@ exports.relayRequest = function relayRequest(req, res) {
     }
 
     let cid = mpParams.cid || 555;
-    let t = mpParams.t || TPAGEVIEW;
+    let t = mpParams.t || HIT_TYPE_PAGEVIEW;
 
     mpParams.cid = cid;
     mpParams.t = t;
 
-    sendMeasurementProtocolHit(mpParams);
+    console.log(mpParams);
+    sendMeasurementProtocolHit(t, mpParams);
+    res.status(200).send()
 };
