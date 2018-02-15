@@ -1,5 +1,6 @@
 # relay-measurement-protocol
-A Google Cloud Function to relay measurement protocol hits
+A Google Cloud Function to relay Google Analytics Measurement Protocol hits on
+behalf of any application that can make POST requests to an HTTP endpoint
 
 ## Instructions
 1. Download this folder to your development machine
