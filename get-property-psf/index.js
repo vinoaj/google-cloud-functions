@@ -66,18 +66,19 @@ exports.lookupPsf = function lookupPsf(req, res) {
     // We expect the request to contain a JSON message with a key 'condoId'
     let condoId = req.body.condoId;
 
-    requestData(condoId).then((htmlContent) => {
-        let psf = getPsf(htmlContent);
-        let json = { 
-            'psf': psf
-        }
-        res.status(200).send(json);
-    })
-    .catch(error => {
-        // Any outputs to console.log will be captured in Stackdriver
-        console.log(error);
-        res.status(400).send(error);
-    });
+    requestData(condoId)
+        .then((htmlContent) => {
+            let psf = getPsf(htmlContent);
+            let json = { 
+                'psf': psf
+            }
+            res.status(200).send(json);
+        })
+        .catch(error => {
+            // Any outputs to console.log will be captured in Stackdriver
+            console.log(error);
+            res.status(400).send(error);
+        });
 };
 
 

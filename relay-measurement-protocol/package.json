@@ -9,6 +9,8 @@
   "author": "vinoaj@vinoaj.com",
   "license": "ISC",
   "dependencies": {
-    "axios": "^0.17.1"
-  }
+    "axios": "^0.17.1",
+    "query-string": "^5.1.0"
+  },
+  "devDependencies": {}
 }
