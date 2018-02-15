@@ -15,6 +15,7 @@ const MP_VERSION = 1;
 const HIT_DS = 'gcf'; // Google Cloud Function
 const HIT_TYPE_PAGEVIEW = 'pageview';
 const HIT_TYPE_EVENT = 'event';
+const ALLOW_ORIGIN = 'https://vinoaj.github.io';
 
 /**
  * Posts a Measurement Protocol hit to GA's collection servers
@@ -63,6 +64,14 @@ function sendMeasurementProtocolHit(type, mpParams) {
  * @param {object} res Response
  */
 exports.relayMPHit = function relayMPHit(req, res) {
+    // Handle preflight CORS checks
+    if (req.method === 'OPTIONS') {
+        res.set('Access-Control-Allow-Origin', ALLOW_ORIGIN)
+           .set('Access-Control-Allow-Methods', 'GET, POST')
+           .status(200);
+           return;
+    }
+
     let mpParams = req.body;
     
     try {
