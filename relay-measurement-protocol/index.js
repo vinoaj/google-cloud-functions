@@ -96,7 +96,7 @@ function sendMeasurementProtocolHit(type, mpParams) {
 exports.relayMPHit = function relayMPHit(req, res) {
     corsOptions = {
         origin: ALLOW_ORIGINS,
-        methods: POST
+        methods: 'POST'
     };
 
     let corsFn = cors(corsOptions);
