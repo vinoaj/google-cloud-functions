@@ -7,10 +7,12 @@
  // Load packages
  const axios = require('axios');
  const queryString = require('query-string');
+ const { URL } = require('url');
 
 // Constants
 const MP_ENDPOINT = 'https://www.google-analytics.com/collect';
 const MP_VERSION = 1;
+const HIT_DS = 'gcf'; // Google Cloud Function
 const HIT_TYPE_PAGEVIEW = 'pageview';
 const HIT_TYPE_EVENT = 'event';
 
@@ -23,13 +25,21 @@ const HIT_TYPE_EVENT = 'event';
 function sendMeasurementProtocolHit(type, mpParams) {
     data = {
         v: MP_VERSION,
+        ds: HIT_DS,
         cid: mpParams.cid,
         tid: mpParams.tid,
         t: mpParams.t
     };
 
     if (type == HIT_TYPE_PAGEVIEW) {
-        data.dl = encodeURIComponent(mpParams.dl);
+        if (mpParams.dl) {
+            let url = new URL(mpParams.dl);
+            data.dh = encodeURIComponent(url.host);
+            data.dp = encodeURIComponent(url.pathname);
+        } else {
+            data.dh = mpParams.dh || 'http://xyz.com/';
+            data.dp = mpParams.dp || '/please_provide_mp_dp';
+        }
     }
     
     let payload = queryString.stringify(data);
@@ -38,7 +48,7 @@ function sendMeasurementProtocolHit(type, mpParams) {
         axios
             .post(MP_ENDPOINT, payload)
             .then(response => {
-                console.log("Request URL: ", response.request.url);
+                // console.log("Request URL: ", response.request.url);
                 resolve(response);
             })
             .catch(error => {
@@ -66,6 +76,7 @@ exports.relayMPHit = function relayMPHit(req, res) {
 
     mpParams.cid = cid;
     mpParams.t = t;
+    mpParams.uip = req.ip;
 
     // Any outputs to console.log will be captured in Stackdriver
     console.log(mpParams);
