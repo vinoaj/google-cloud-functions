@@ -6,6 +6,7 @@
 
  // Load packages
  const axios = require('axios');
+ const cors = require('cors');
  const queryString = require('query-string');
  const { URL } = require('url');
 
@@ -15,7 +16,36 @@ const MP_VERSION = 1;
 const HIT_DS = 'gcf'; // Google Cloud Function
 const HIT_TYPE_PAGEVIEW = 'pageview';
 const HIT_TYPE_EVENT = 'event';
-const ALLOW_ORIGIN = 'https://vinoaj.github.io';
+const ALLOW_ORIGINS = ['https://vinoaj.github.io', 'https://vinoaj.com'];
+
+function processRelay(req, res) {
+    let mpParams = req.body;
+    
+    try {
+        let tid = mpParams.tid
+    } catch (e) {
+        throw "No tid provided";
+    }
+
+    let cid = mpParams.cid || 555;
+    let t = mpParams.t || HIT_TYPE_PAGEVIEW;
+
+    mpParams.cid = cid;
+    mpParams.t = t;
+    mpParams.uip = req.ip;
+
+    // Any outputs to console.log will be captured in Stackdriver
+    console.log(mpParams);
+    sendMeasurementProtocolHit(t, mpParams)
+        .then((response) => {
+            console.log(response);
+            res.status(response.status).send();
+        })
+        .catch(error => {
+            console.log(error);
+            res.status(400).send(error);
+        });
+}
 
 /**
  * Posts a Measurement Protocol hit to GA's collection servers
@@ -64,38 +94,13 @@ function sendMeasurementProtocolHit(type, mpParams) {
  * @param {object} res Response
  */
 exports.relayMPHit = function relayMPHit(req, res) {
-    // Handle preflight CORS checks
-    if (req.method === 'OPTIONS') {
-        res.set('Access-Control-Allow-Origin', ALLOW_ORIGIN)
-           .set('Access-Control-Allow-Methods', 'GET, POST')
-           .status(200);
-           return;
-    }
+    corsOptions = {
+        origin: ALLOW_ORIGINS,
+        methods: POST
+    };
 
-    let mpParams = req.body;
-    
-    try {
-        let tid = mpParams.tid
-    } catch (e) {
-        throw "No tid provided";
-    }
-
-    let cid = mpParams.cid || 555;
-    let t = mpParams.t || HIT_TYPE_PAGEVIEW;
-
-    mpParams.cid = cid;
-    mpParams.t = t;
-    mpParams.uip = req.ip;
-
-    // Any outputs to console.log will be captured in Stackdriver
-    console.log(mpParams);
-    sendMeasurementProtocolHit(t, mpParams)
-        .then((response) => {
-            console.log(response);
-            res.status(response.status).send();
-        })
-        .catch(error => {
-            console.log(error);
-            res.status(400).send(error);
-        });
+    let corsFn = cors(corsOptions);
+    corsFn(req, res, function() {
+        processRelay(req, res);
+    });
 };
