@@ -6,9 +6,14 @@
 
  // Load packages
  const axios = require('axios');
- const cors = require('cors');
  const queryString = require('query-string');
  const { URL } = require('url');
+
+ const corsOptions = {
+    origin: ALLOW_ORIGINS,
+    methods: 'POST'
+};
+const cors = require(corsOptions);
 
 // Constants
 const MP_ENDPOINT = 'https://www.google-analytics.com/collect';
@@ -94,12 +99,7 @@ function sendMeasurementProtocolHit(type, mpParams) {
  * @param {object} res Response
  */
 exports.relayMPHit = function relayMPHit(req, res) {
-    corsOptions = {
-        origin: ALLOW_ORIGINS,
-        methods: 'POST'
-    };
-
-    let corsFn = cors(corsOptions);
+    let corsFn = cors();
     corsFn(req, res, function() {
         processRelay(req, res);
     });
