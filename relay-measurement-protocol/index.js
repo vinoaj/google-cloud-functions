@@ -4,10 +4,12 @@
  * @author vinoaj@vinoaj.com (Vinoaj Vijeyakumaar)
  */
 
- // Load packages
- const axios = require('axios');
- const queryString = require('query-string');
- const { URL } = require('url');
+// Load packages
+const axios = require('axios');
+const queryString = require('query-string');
+const {
+    URL
+} = require('url');
 
 // Constants
 const MP_ENDPOINT = 'https://www.google-analytics.com/collect';
@@ -15,7 +17,6 @@ const MP_VERSION = 1;
 const HIT_DS = 'gcf'; // Google Cloud Function
 const HIT_TYPE_PAGEVIEW = 'pageview';
 const HIT_TYPE_EVENT = 'event';
-
 
 // Modify these constants for your needs
 // Allowed origins for CORS
@@ -45,7 +46,7 @@ const cors = require('cors')(corsOptions);
  */
 function processRelay(req, res) {
     let mpParams = req.body;
-    
+
     try {
         let tid = mpParams.tid
     } catch (e) {
@@ -85,7 +86,8 @@ function sendMeasurementProtocolHit(type, mpParams) {
         ds: HIT_DS,
         cid: mpParams.cid,
         tid: mpParams.tid,
-        t: mpParams.t
+        t: mpParams.t,
+        uip: mpParams.uip
     };
 
     if (type == HIT_TYPE_PAGEVIEW) {
@@ -101,7 +103,7 @@ function sendMeasurementProtocolHit(type, mpParams) {
             data.dp = mpParams.dp || MP_DEFAULT_DP;
         }
     }
-    
+
     let payload = queryString.stringify(data);
 
     return new Promise((resolve, reject) => {
